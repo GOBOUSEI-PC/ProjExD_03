@@ -80,6 +80,8 @@ class Bird:
         self.rct.move_ip(sum_mv)
         if check_bound(self.rct) != (True, True):
             self.rct.move_ip(-sum_mv[0], -sum_mv[1])
+        if not (sum_mv[0] == 0 and sum_mv[1] == 0):
+            self.img = self.imgs[tuple(sum_mv)]
         screen.blit(self.img, self.rct)
 
 
@@ -138,6 +140,29 @@ class Bomb:
         self.rct.move_ip(self.vx, self.vy)
         screen.blit(self.img, self.rct)
 
+class Explosion:
+    def __init__(self, center):
+        # イメージの読み込みと反転
+        self.images = [
+            pg.image.load('ex03/fig/explosion.gif'),
+            pg.transform.flip(pg.image.load('ex03/fig/explosion.gif'), True, False),
+            pg.transform.flip(pg.image.load('ex03/fig/explosion.gif'), False, True),
+            pg.transform.flip(pg.image.load('ex03/fig/explosion.gif'), True, True)
+        ]
+        self.index = 0  # 現在の画像のインデックス
+        self.rect = self.images[0].get_rect()  # 画像の矩形領域
+        self.rect.center = center  # 爆発した爆弾の位置
+        self.life = len(self.images) * 10  # 表示時間（爆発時間）
+
+    def update(self):
+        self.life -= 1  # 爆発経過時間を1減算
+        if self.life % 10 == 0:
+            self.index += 1  # 画像のインデックスを更新
+        if self.index >= len(self.images):
+            self.index = 0  # 画像のインデックスが範囲外なら最初に戻す
+
+    def draw(self, screen):
+        screen.blit(self.images[self.index], self.rect)
 
 def main():
     pg.display.set_caption("たたかえ！こうかとん")
@@ -146,8 +171,14 @@ def main():
     bird = Bird(3, (900, 400))
     bombs = [Bomb() for _ in range(NUM_OF_BOMBS)]
     beam = None
-
+    
     clock = pg.time.Clock()
+
+    bomb_rect = pg.Rect(200, 200, 50, 50)
+    beam_rect = pg.Rect(250, 200, 100, 50)
+    explosion_list = []
+
+
     tmr = 0
     while True:
         for event in pg.event.get():
@@ -175,10 +206,23 @@ def main():
                     bombs[i] = None
                     bird.change_img(6, screen)
                     pg.display.update()
-        bombs = [bomb for bomb in bombs if bomb is not None]                        
+        bombs = [bomb for bomb in bombs if bomb is not None] 
+
+         # 衝突判定
+        if bomb_rect.colliderect(beam_rect):
+            explosion = Explosion(bomb_rect.center)  # 爆発インスタンスを生成
+            explosion_list.append(explosion)
+
+        # 爆発の更新と描画
+        explosion_list = [explosion for explosion in explosion_list if explosion.life > 0]
+        for explosion in explosion_list:
+            explosion.update()
+            explosion.draw(screen)
+            time.sleep(3)       
 
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
+
         for bomb in bombs:
             bomb.update(screen)
         if beam is not None:
