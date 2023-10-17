@@ -141,7 +141,7 @@ class Bomb:
         screen.blit(self.img, self.rct)
 
 class Explosion:
-    def __init__(self, center):
+    def __init__(self):
         # イメージの読み込みと反転
         self.images = [
             pg.image.load('ex03/fig/explosion.gif'),
@@ -151,7 +151,6 @@ class Explosion:
         ]
         self.index = 0  # 現在の画像のインデックス
         self.rect = self.images[0].get_rect()  # 画像の矩形領域
-        self.rect.center = center  # 爆発した爆弾の位置
         self.life = len(self.images) * 10  # 表示時間（爆発時間）
 
     def update(self):
