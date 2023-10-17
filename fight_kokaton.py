@@ -183,6 +183,7 @@ def main():
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT:
+                done = False
                 return
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 # キーが押されたら，かつ，キーの種類がスペースキーだったら
@@ -217,8 +218,7 @@ def main():
         explosion_list = [explosion for explosion in explosion_list if explosion.life > 0]
         for explosion in explosion_list:
             explosion.update()
-            explosion.draw(screen)
-            time.sleep(3)       
+            explosion.draw(screen)       
 
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
